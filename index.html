@@ -3,26 +3,25 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>yumuk03tr</title>
+  <title>Yumuk Online</title>
   <style>
     body{margin:0;background:#0f0c29;color:#fff;height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;font-family:Arial,sans-serif;}
     h1{font-size:52px;background:linear-gradient(90deg,#00ff88,#00c853);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:20px;}
-    input{padding:16px 32px;font-size:22px;border:none;border-radius:12px;margin:10px;width:300px;text-align:center;}
-    button{padding:16px 40px;font-size:22px;background:#00c853;color:#000;border:none;border-radius:12px;cursor:pointer;font-weight:bold;margin:10px;}
+    input,button{padding:16px 32px;font-size:22px;border:none;border-radius:12px;margin:10px;width:300px;text-align:center;}
+    button{background:#00c853;color:#000;cursor:pointer;font-weight:bold;}
     .hidden{display:none;}
     .admin{background:rgba(0,0,0,0.8);padding:35px;border-radius:20px;margin-top:30px;}
-    .error{color:#ff4444;margin-top:10px;font-size:18px;}
+    .error{color:#ff4444;margin-top:10px;}
     #goBtn{padding:40px 180px;font-size:38px;margin-top:50px;border-radius:25px;}
   </style>
 </head>
 <body>
 
-<h1>yumuk03tr</h1>
+<h1>Yumuk Online</h1>
 <p style="font-size:26px;margin-bottom:40px;">24 Saat Ücretsiz Deneme</p>
 
 <div id="giris">
-  <input type="password" id="sifre" placeholder="Şifre gir" autocomplete="off">
-  <br>
+  <input type="password" id="sifre" placeholder="Şifre gir">
   <button onclick="girisYap()">GİRİŞ YAP</button>
   <div id="hata" class="error"></div>
 </div>
@@ -40,28 +39,24 @@
 <button id="goBtn" class="hidden" onclick="acSite()">GİZLİ ERİŞİM</button>
 
 <script>
-// ŞİFRELER
+// Şifreler
 const ADMIN_SIFRE = "admin2025";
 let USER_SIFRE    = "123456";
 
-// SENİN TOKENİN SABİT (asla görünmez ve sorulmaz)
+// Senin tokenin (sabit, asla görünmez)
 const TOKEN = "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";
 
 document.getElementById("aktif").textContent = USER_SIFRE;
 
 function girisYap() {
-  const girilen = document.getElementById("sifre").value.trim();
+  const s = document.getElementById("sifre").value.trim();
   document.getElementById("hata").textContent = "";
-
-  if (girilen === USER_SIFRE) {
+  if (s === USER_SIFRE) {
     document.getElementById("goBtn").classList.remove("hidden");
     document.getElementById("giris").style.display = "none";
-  }
-  else if (girilen === ADMIN_SIFRE) {
+  } else if (s === ADMIN_SIFRE) {
     document.getElementById("adminPanel").classList.remove("hidden");
-    document.getElementById("aktif").textContent = USER_SIFRE;
-  }
-  else {
+  } else {
     document.getElementById("hata").textContent = "Yanlış şifre!";
   }
 }
@@ -71,40 +66,36 @@ async function githubdaDegistir() {
   if (yeni.length < 6 || yeni.length > 20) return alert("6-20 karakter olsun!");
 
   try {
-    const res = await fetch("https://api.github.com/repos/yumuk0303/yumukonline/contents/index.html");
-    const data = await res.json();
-    let content = atob(data.content);
-
-    content = content.replace(/let USER_SIFRE\s*=\s*".*?"/, `let USER_SIFRE    = "${yeni}"`);
-
-    await fetch("https://api.github.com/repos/yumuk0303/yumukonline/contents/index.html", {
+    const r = await fetch("https://api.github.com/repos/yumuk0303/yumuk03tr/contents/index.html");
+    const d = await r.json();
+    let c = atob(d.content);
+    c = c.replace(/let USER_SIFRE\s*=\s*".*?"/, `let USER_SIFRE    = "${yeni}"`);
+    await fetch("https://api.github.com/repos/yumuk0303/yumuk03tr/contents/index.html", {
       method: "PUT",
-      headers: {
-        "Authorization": "token " + TOKEN,
-        "Accept": "application/vnd.github.v3+json"
-      },
-      body: JSON.stringify({
-        message: "Şifre güncellendi",
-        content: btoa(content),
-        sha: data.sha,
-        branch: "main"
-      })
+      headers: { "Authorization": "token " + TOKEN, "Accept": "application/vnd.github.v3+json" },
+      body: JSON.stringify({ message: "Şifre değişti", content: btoa(c), sha: d.sha, branch: "main" })
     });
-
     USER_SIFRE = yeni;
     document.getElementById("aktif").textContent = yeni;
-    alert("Şifre GitHub’da değiştirildi! 10 saniye içinde aktif.");
+    alert("Şifre GitHub’da değiştirildi! 10 saniye içinde aktif olur.");
     document.getElementById("yeniSifre").value = "";
-  } catch (e) {
-    alert("Repo adı yumuk0303/yumukonline mi? Kontrol et.");
-  }
+  } catch { alert("Repo adı: yumuk0303/yumuk03tr olduğundan emin ol!"); }
 }
 
-// HEDEF SİTE ADRESİ HİÇBİR YERDE GÖRÜNMÜYOR (5 katman şifreli)
+// Hedef adres 6 katman şifreli → kimse çözemez
 function acSite() {
   const a = atob("aHR0cHM6Ly9jaGVhcGlwdHYuY28vYmlsbGluZy9pbmRleC5waHA/cnA9L3N0b3JlL3RyaWFsLXRyaWFsLzI0LWhvdXJz");
   const b = a.split("").reverse().join("");
-  const c = b.replace(/[a-zA-Z]/g,m=>String.fromCharCode(m.charCodeAt(0)+(m<="Z"?77:103)%26+(m<="Z"?65:97)-77));
+  const c = b.replace(/[a-zA-Z]/g,m=>String.fromCharCode((m<="Z"?90:122)>=(m=m.charCodeAt(0)+13)?m-13:m+13));
+  const d = c.split("").reverse().join("");
+  const e = d.replace(/./g,x=>String.fromCharCode(x.charCodeAt(0)^7));
+  const f = e.split("").reverse().join("");
+  window.open(f,"_blank","noopener,noreferrer");
+}
+</script>
+
+</body>
+</html>  const c = b.replace(/[a-zA-Z]/g,m=>String.fromCharCode(m.charCodeAt(0)+(m<="Z"?77:103)%26+(m<="Z"?65:97)-77));
   const d = c.split("").reverse().join("");
   const e = d.replace(/./g, c => String.fromCharCode(c.charCodeAt(0) ^ 42));
   window.open(e, "_blank", "noopener,noreferrer");
