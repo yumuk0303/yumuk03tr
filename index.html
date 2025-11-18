@@ -10,67 +10,89 @@
     input,button{padding:15px 30px;font-size:20px;border:none;border-radius:10px;margin:10px;}
     button{background:#00c853;color:#000;cursor:pointer;}
     .hidden{display:none;}
-    .admin{background:rgba(0,0,0,0.6);padding:30px;border-radius:20px;margin-top:30px;}
+    .admin{background:rgba(0,0,0,0.7);padding:30px;border-radius:20px;margin-top:30px;}
     .error{color:#ff4444;margin-top:10px;}
     #goBtn{padding:30px 120px;font-size:32px;margin-top:40px;}
   </style>
 </head>
 <body>
-  <h1>Yumuk Online</h1>
-  <p style="font-size:24px;">24 Saat Ücretsiz Deneme</p>
 
-  <div id="userPanel">
-    <input type="password" id="userPin" placeholder="Şifrenizi girin">
-    <button onclick="check()">GİRİŞ YAP</button>
-    <div id="error" class="error"></div>
-  </div>
+<h1>Yumuk Online</h1>
+<p style="font-size:24px;">24 Saat Ücretsiz Deneme</p>
 
-  <div id="admin" class="hidden admin">
-    <h2>ADMIN PANELİ</h2>
-    <input type="text" id="yeni" placeholder="Yeni şifre (6-15 karakter)">
-    <button onclick="degistir()">KALICI DEĞİŞTİR</button>
-    <p>Şu anki şifre: <strong id="aktif"></strong></p>
-  </div>
+<div id="userPanel">
+  <input type="password" id="pin" placeholder="Şifrenizi girin" maxlength="20">
+  <button onclick="kontrol()">GİRİŞ YAP</button>
+  <div id="hata" class="error"></div>
+</div>
 
-  <button id="goBtn" class="hidden" onclick="git()">GİZLİ ERİŞİM</button>
+<div id="adminPanel" class="hidden admin">
+  <h2>ADMIN PANELİ</h2>
+  <input type="text" id="yeniSifre" placeholder="Yeni şifre yaz (6-20 karakter)">
+  <button onclick="sifreyiDegistir()">ŞİFREYİ KALICI DEĞİŞTİR</button>
+  <p style="margin-top:15px;color:#0f0;">Şu anki şifre: <strong id="suanki"></strong></p>
+</div>
+
+<button id="goBtn" class="hidden" onclick="git()">GİZLİ ERİŞİM</button>
 
 <script>
-// Şifre GitHub’da tutuluyor → her zaman kalıcı
-const ADMIN_PIN = "admin2025";  // Sadece sen bileceksin
-let USER_PIN = "123456";        // Üyelerin gireceği şifre
+// === AYARLARI BURADAN DEĞİŞTİR ===
+const ADMIN_SIFRE = "admin2025";           // Sadece sen bileceksin
+let USER_SIFRE = "123456";                 // Üyelerin gireceği şifre (adminle değiştirilir)
+// =====================================
 
-// BURAYI DEĞİŞTİRMEK İSTERSEN GİTHUB’A YENİDEN YÜKLE
+document.getElementById("suanki").textContent = USER_SIFRE;
 
-document.getElementById("aktif").textContent = USER_PIN;
-
-function check() {
-  const s = document.getElementById("userPin").value;
-  if (s === USER_PIN) {
+function kontrol() {
+  const girilen = document.getElementById("pin").value;
+  if (girilen === USER_SIFRE) {
     document.getElementById("goBtn").classList.remove("hidden");
     document.getElementById("userPanel").style.display = "none";
   }
-  else if (s === ADMIN_PIN) {
-    document.getElementById("admin").classList.remove("hidden");
-    document.getElementById("aktif").textContent = USER_PIN;
+  else if (girilen === ADMIN_SIFRE) {
+    document.getElementById("adminPanel").classList.remove("hidden");
+    document.getElementById("suanki").textContent = USER_SIFRE;
   }
   else {
-    document.getElementById("error").textContent = "Yanlış şifre!";
+    document.getElementById("hata").textContent = "Yanlış şifre!";
   }
 }
 
-function degistir() {
-  const yeni = document.getElementById("yeni").value;
-  if (yeni.length >= 6 && yeni.length <= 15) {
-    alert("Yeni şifre: " + yeni + "\nŞimdi GitHub’a girip bu dosyayı güncellemen lazım → 30 saniye sürer");
-    // Otomatik yönlendirme (seni GitHub edit sayfasına git)
-    window.open("https://github.com/" + window.location.hostname.split('.')[0] + "/" + window.location.hostname.split('.')[0] + "/edit/main/index.html", "_blank");
-  } else alert("6-15 karakter olmalı!");
-}
+// ŞİFREYİ GİTHUB’DA OTOMATİK GÜNCELLE (tek tık!)
+async function sifreyiDegistir() {
+  const yeni = document.getElementById("yeniSifre").value.trim();
+  if (yeni.length < 6 || yeni.length > 20) return alert("6-20 karakter olmalı!");
 
-function git() {
-  const url = atob("aHR0cHM6Ly9jaGVhcGlwdHYuY28vYmlsbGluZy9pbmRleC5waHA/cnA9L3N0b3JlL3RyaWFsLXRyaWFsLzI0LWhvdXJz");
-  window.open(url, '_blank', 'noopener,noreferrer');
-}
-</script>
-</body>
-</html>
+  const token = prompt("GitHub Personal Access Token gir (sadece bir kere sorar):");
+  if (!token) return;
+
+  const owner = "yumuk0303";
+  const repo = "yumukonline";           // ← repo adını buraya yaz
+  const path = "index.html";
+  const api = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
+
+  try {
+    // Mevcut dosyanın sha’sını al
+    const res = await fetch(api);
+    const data = await res.json();
+    const sha = data.sha;
+    const content = atob(data.content);
+
+    // Yeni şifreyi koda yerleştir
+    const yeniKod = content.replace(
+      /let USER_SIFRE = "[^"]*"/,
+      `let USER_SIFRE = "${yeni}"`
+    );
+
+    // GitHub’a güncellenmiş dosyayı gönder
+    await fetch(api, {
+      method: "PUT",
+      headers: {
+        "Authorization": `token ${token}`,
+        "Accept": "application/vnd.github.v3+json"
+      },
+      body: JSON.stringify({
+        message: "Şifre güncellendi",
+        content: btoa(yeniKod),
+        sha: sha,
+        branch
