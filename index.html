@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Yumuk Online</title>
+  <style>
+    body{margin:0;background:#0f0c29;color:#fff;height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;font-family:Arial,sans-serif;}
+    h1{font-size:50px;background:linear-gradient(90deg,#00ff88,#00c853);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:20px;}
+    input,button{padding:15px 30px;font-size:20px;border:none;border-radius:10px;margin:10px;}
+    button{background:#00c853;color:#000;cursor:pointer;}
+    .hidden{display:none;}
+    .admin{background:rgba(0,0,0,0.6);padding:30px;border-radius:20px;margin-top:30px;}
+    .error{color:#ff4444;margin-top:10px;}
+    #goBtn{padding:30px 120px;font-size:32px;margin-top:40px;}
+  </style>
+</head>
+<body>
+  <h1>Yumuk Online</h1>
+  <p style="font-size:24px;">24 Saat Ücretsiz Deneme</p>
+
+  <div id="userPanel">
+    <input type="password" id="userPin" placeholder="Şifrenizi girin">
+    <button onclick="check()">GİRİŞ YAP</button>
+    <div id="error" class="error"></div>
+  </div>
+
+  <div id="admin" class="hidden admin">
+    <h2>ADMIN PANELİ</h2>
+    <input type="text" id="yeni" placeholder="Yeni şifre (6-15 karakter)">
+    <button onclick="degistir()">KALICI DEĞİŞTİR</button>
+    <p>Şu anki şifre: <strong id="aktif"></strong></p>
+  </div>
+
+  <button id="goBtn" class="hidden" onclick="git()">GİZLİ ERİŞİM</button>
+
+<script>
+// Şifre GitHub’da tutuluyor → her zaman kalıcı
+const ADMIN_PIN = "admin2025";  // Sadece sen bileceksin
+let USER_PIN = "123456";        // Üyelerin gireceği şifre
+
+// BURAYI DEĞİŞTİRMEK İSTERSEN GİTHUB’A YENİDEN YÜKLE
+
+document.getElementById("aktif").textContent = USER_PIN;
+
+function check() {
+  const s = document.getElementById("userPin").value;
+  if (s === USER_PIN) {
+    document.getElementById("goBtn").classList.remove("hidden");
+    document.getElementById("userPanel").style.display = "none";
+  }
+  else if (s === ADMIN_PIN) {
+    document.getElementById("admin").classList.remove("hidden");
+    document.getElementById("aktif").textContent = USER_PIN;
+  }
+  else {
+    document.getElementById("error").textContent = "Yanlış şifre!";
+  }
+}
+
+function degistir() {
+  const yeni = document.getElementById("yeni").value;
+  if (yeni.length >= 6 && yeni.length <= 15) {
+    alert("Yeni şifre: " + yeni + "\nŞimdi GitHub’a girip bu dosyayı güncellemen lazım → 30 saniye sürer");
+    // Otomatik yönlendirme (seni GitHub edit sayfasına git)
+    window.open("https://github.com/" + window.location.hostname.split('.')[0] + "/" + window.location.hostname.split('.')[0] + "/edit/main/index.html", "_blank");
+  } else alert("6-15 karakter olmalı!");
+}
+
+function git() {
+  const url = atob("aHR0cHM6Ly9jaGVhcGlwdHYuY28vYmlsbGluZy9pbmRleC5waHA/cnA9L3N0b3JlL3RyaWFsLXRyaWFsLzI0LWhvdXJz");
+  window.open(url, '_blank', 'noopener,noreferrer');
+}
+</script>
+</body>
+</html>
