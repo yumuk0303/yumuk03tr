@@ -10,9 +10,9 @@
     input,button{padding:15px 30px;font-size:20px;border:none;border-radius:10px;margin:10px;}
     button{background:#00c853;color:#000;cursor:pointer;}
     .hidden{display:none;}
-    .admin{background:rgba(0,0,0,0.7);padding:30px;border-radius:20px;margin-top:30px;}
-    .error{color:#ff4444;margin-top:10px;}
-    #goBtn{padding:30px 120px;font-size:32px;margin-top:40px;}
+    .admin{background:rgba(0,0,0,0.7);padding:30px;border-radius:20px;}
+    .error{color:#ff4444;}
+    #goBtn{padding:35px 140px;font-size:34px;margin-top:40px;}
   </style>
 </head>
 <body>
@@ -20,79 +20,96 @@
 <h1>Yumuk Online</h1>
 <p style="font-size:24px;">24 Saat Ücretsiz Deneme</p>
 
-<div id="userPanel">
-  <input type="password" id="pin" placeholder="Şifrenizi girin" maxlength="20">
-  <button onclick="kontrol()">GİRİŞ YAP</button>
+<div id="giris">
+  <input type="password" id="sifre" placeholder="Şifreyi gir" autocomplete="off">
+  <button onclick="kontrolEt()">GİRİŞ</button>
   <div id="hata" class="error"></div>
 </div>
 
-<div id="adminPanel" class="hidden admin">
+<div id="admin" class="hidden admin">
   <h2>ADMIN PANELİ</h2>
-  <input type="text" id="yeniSifre" placeholder="Yeni şifre yaz (6-20 karakter)">
-  <button onclick="sifreyiDegistir()">ŞİFREYİ KALICI DEĞİŞTİR</button>
-  <p style="margin-top:15px;color:#0f0;">Şu anki şifre: <strong id="suanki"></strong></p>
+  <input type="text" id="yenisifre" placeholder="Yeni şifre (6-20 karakter)">
+  <button onclick="githubGuncelle()">TEK TIKLA DEĞİŞTİR</button>
+  <p>Şu anki şifre: <strong id="aktif">123456</strong></p>
 </div>
 
-<button id="goBtn" class="hidden" onclick="git()">GİZLİ ERİŞİM</button>
+<button id="goBtn" class="hidden" onclick="acSite()">GİZLİ ERİŞİM</button>
 
 <script>
-// === AYARLARI BURADAN DEĞİŞTİR ===
-const ADMIN_SIFRE = "admin2025";           // Sadece sen bileceksin
-let USER_SIFRE = "123456";                 // Üyelerin gireceği şifre (adminle değiştirilir)
-// =====================================
+// === BU KISMI ASLA DEĞİŞTİRME ===
+const ADMIN_SIFRESI = "admin2025";           // Sadece sen bileceksin
+let KULLANICI_SIFRESI = "123456";            // Üyelerin gireceği şifre
+// =======================================
 
-document.getElementById("suanki").textContent = USER_SIFRE;
+document.getElementById("aktif").textContent = KULLANICI_SIFRESI;
 
-function kontrol() {
-  const girilen = document.getElementById("pin").value;
-  if (girilen === USER_SIFRE) {
+function kontrolEt() {
+  const girilen = document.getElementById("sifre").value;
+  document.getElementById("hata").textContent = "";
+
+  if (girilen === KULLANICI_SIFRESI) {
     document.getElementById("goBtn").classList.remove("hidden");
-    document.getElementById("userPanel").style.display = "none";
+    document.getElementById("giris").style.display = "none";
   }
-  else if (girilen === ADMIN_SIFRE) {
-    document.getElementById("adminPanel").classList.remove("hidden");
-    document.getElementById("suanki").textContent = USER_SIFRE;
+  else if (girilen === ADMIN_SIFRESI) {
+    document.getElementById("admin").classList.remove("hidden");
+    document.getElementById("aktif").textContent = KULLANICI_SIFRESI;
   }
   else {
     document.getElementById("hata").textContent = "Yanlış şifre!";
   }
 }
 
-// ŞİFREYİ GİTHUB’DA OTOMATİK GÜNCELLE (tek tık!)
-async function sifreyiDegistir() {
-  const yeni = document.getElementById("yeniSifre").value.trim();
-  if (yeni.length < 6 || yeni.length > 20) return alert("6-20 karakter olmalı!");
+async function githubGuncelle() {
+  const yeni = document.getElementById("yenisifre").value.trim();
+  if (yeni.length < 6 || yeni.length > 20) return alert("6-20 karakter olsun!");
 
-  const token = prompt("GitHub Personal Access Token gir (sadece bir kere sorar):");
-  if (!token) return;
-
-  const owner = "yumuk0303";
-  const repo = "yumukonline";           // ← repo adını buraya yaz
-  const path = "index.html";
-  const api = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
+  // GitHub Token (bir kere sorar, sonra bir daha sormaz)
+  let token = localStorage.getItem("gh_token");
+  if (!token) {
+    token = prompt("GitHub Personal Access Token gir (repo izni olan):");
+    if (!token) return;
+    localStorage.setItem("gh_token", token);
+  }
 
   try {
-    // Mevcut dosyanın sha’sını al
-    const res = await fetch(api);
-    const data = await res.json();
-    const sha = data.sha;
-    const content = atob(data.content);
+    const response = await fetch("https://api.github.com/repos/yumuk0303/yumukonline/contents/index.html");
+    const data = await response.json();
+    let content = atob(data.content);
 
-    // Yeni şifreyi koda yerleştir
-    const yeniKod = content.replace(
-      /let USER_SIFRE = "[^"]*"/,
-      `let USER_SIFRE = "${yeni}"`
+    // Eski şifreyi yeniyle değiştir
+    content = content.replace(
+      /let KULLANICI_SIFRESI = "[^"]*"/,
+      `let KULLANICI_SIFRESI = "${yeni}"`
     );
 
-    // GitHub’a güncellenmiş dosyayı gönder
-    await fetch(api, {
+    await fetch("https://api.github.com/repos/yumuk0303/yumukonline/contents/index.html", {
       method: "PUT",
       headers: {
         "Authorization": `token ${token}`,
         "Accept": "application/vnd.github.v3+json"
       },
       body: JSON.stringify({
-        message: "Şifre güncellendi",
-        content: btoa(yeniKod),
-        sha: sha,
-        branch
+        message: "Şifre güncellendi: " + yeni,
+        content: btoa(content),
+        sha: data.sha,
+        branch: "main"
+      })
+    });
+
+    KULLANICI_SIFRESI = yeni;
+    document.getElementById("aktif").textContent = yeni;
+    alert("Şifre GitHub’da güncellendi!\n10 saniye içinde herkes yeni şifreyle girer.");
+    document.getElementById("yenisifre").value = "";
+  } catch (err) {
+    alert("Hata: Token yanlış veya repo adı farklı olabilir.");
+  }
+}
+
+function acSite() {
+  window.open("https://cheapiptv.co/billing/index.php?rp=/store/trial-trial/24-hours", "_blank", "noopener,noreferrer");
+}
+</script>
+
+</body>
+</html>
