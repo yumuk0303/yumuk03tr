@@ -1,115 +1,76 @@
 <!DOCTYPE html>
 <html lang="tr">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Yumuk Online</title>
-  <style>
-    body{margin:0;background:#0f0c29;color:#fff;height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;font-family:Arial,sans-serif;}
-    h1{font-size:50px;background:linear-gradient(90deg,#00ff88,#00c853);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:20px;}
-    input,button{padding:15px 30px;font-size:20px;border:none;border-radius:10px;margin:10px;}
-    button{background:#00c853;color:#000;cursor:pointer;}
-    .hidden{display:none;}
-    .admin{background:rgba(0,0,0,0.7);padding:30px;border-radius:20px;}
-    .error{color:#ff4444;}
-    #goBtn{padding:35px 140px;font-size:34px;margin-top:40px;}
-  </style>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Yumuk Online</title>
+<style>
+  body{margin:0;background:#0f0c29;color:#fff;height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;font-family:Arial;}
+  h1{font-size:50px;background:linear-gradient(90deg,#00ff88,#00c853);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:20px;}
+  input,button{padding:15px 30px;font-size:20px;border:none;border-radius:10px;margin:10px;}
+  button{background:#00c853;color:#000;cursor:pointer;}
+  .hidden{display:none;}.admin{background:rgba(0,0,0,0.7);padding:30px;border-radius:20px;}
+  #goBtn{padding:35px 140px;font-size:34px;margin-top:40px;}
+</style>
 </head>
 <body>
-
 <h1>Yumuk Online</h1>
 <p style="font-size:24px;">24 Saat Ücretsiz Deneme</p>
 
 <div id="giris">
-  <input type="password" id="sifre" placeholder="Şifreyi gir" autocomplete="off">
-  <button onclick="kontrolEt()">GİRİŞ</button>
-  <div id="hata" class="error"></div>
+  <input type="password" id="sifre" placeholder="Şifreyi gir">
+  <button onclick="kontrol()">GİRİŞ</button>
+  <div id="hata" style="color:#ff4444;"></div>
 </div>
 
 <div id="admin" class="hidden admin">
   <h2>ADMIN PANELİ</h2>
   <input type="text" id="yenisifre" placeholder="Yeni şifre (6-20 karakter)">
-  <button onclick="githubGuncelle()">TEK TIKLA DEĞİŞTİR</button>
+  <button onclick="degistir()">TEK TIKLA DEĞİŞTİR</button>
   <p>Şu anki şifre: <strong id="aktif">123456</strong></p>
 </div>
 
-<button id="goBtn" class="hidden" onclick="acSite()">GİZLİ ERİŞİM</button>
+<button id="goBtn" class="hidden" onclick="ac()">GİZLİ ERİŞİM</button>
 
 <script>
-// === BU KISMI ASLA DEĞİŞTİRME ===
-const ADMIN_SIFRESI = "admin2025";           // Sadece sen bileceksin
-let KULLANICI_SIFRESI = "123456";            // Üyelerin gireceği şifre
-// =======================================
+const ADMIN = "admin2025";
+let USER = "123456";
+document.getElementById("aktif").textContent = USER;
 
-document.getElementById("aktif").textContent = KULLANICI_SIFRESI;
+// BURAYA KENDİ TOKEN’INI YAPIŞTIR (ghp_ ile başlayan)
+const TOKEN = "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";   // ← sadece burayı doldur
 
-function kontrolEt() {
-  const girilen = document.getElementById("sifre").value;
-  document.getElementById("hata").textContent = "";
-
-  if (girilen === KULLANICI_SIFRESI) {
-    document.getElementById("goBtn").classList.remove("hidden");
-    document.getElementById("giris").style.display = "none";
-  }
-  else if (girilen === ADMIN_SIFRESI) {
-    document.getElementById("admin").classList.remove("hidden");
-    document.getElementById("aktif").textContent = KULLANICI_SIFRESI;
-  }
-  else {
-    document.getElementById("hata").textContent = "Yanlış şifre!";
-  }
+function kontrol(){
+  const s = document.getElementById("sifre").value;
+  if(s===USER){document.getElementById("goBtn").classList.remove("hidden");document.getElementById("giris").style.display="none";}
+  else if(s===ADMIN){document.getElementById("admin").classList.remove("hidden");}
+  else{document.getElementById("hata").textContent="Yanlış şifre!";}
 }
 
-async function githubGuncelle() {
+async function degistir(){
   const yeni = document.getElementById("yenisifre").value.trim();
-  if (yeni.length < 6 || yeni.length > 20) return alert("6-20 karakter olsun!");
+  if(yeni.length<6||yeni.length>20)return alert("6-20 karakter olmalı!");
+  if(TOKEN==="BURAYA_TOKENINI_YAZ")return alert("Token eksik!");
 
-  // GitHub Token (bir kere sorar, sonra bir daha sormaz)
-  let token = localStorage.getItem("gh_token");
-  if (!token) {
-    token = prompt("GitHub Personal Access Token gir (repo izni olan):");
-    if (!token) return;
-    localStorage.setItem("gh_token", token);
-  }
-
-  try {
-    const response = await fetch("https://api.github.com/repos/yumuk0303/yumukonline/contents/index.html");
-    const data = await response.json();
-    let content = atob(data.content);
-
-    // Eski şifreyi yeniyle değiştir
-    content = content.replace(
-      /let KULLANICI_SIFRESI = "[^"]*"/,
-      `let KULLANICI_SIFRESI = "${yeni}"`
-    );
-
-    await fetch("https://api.github.com/repos/yumuk0303/yumukonline/contents/index.html", {
-      method: "PUT",
-      headers: {
-        "Authorization": `token ${token}`,
-        "Accept": "application/vnd.github.v3+json"
-      },
-      body: JSON.stringify({
-        message: "Şifre güncellendi: " + yeni,
-        content: btoa(content),
-        sha: data.sha,
-        branch: "main"
-      })
+  try{
+    const res = await fetch("https://api.github.com/repos/yumuk0303/yumukonline/contents/index.html");
+    const data = await res.json();
+    let kod = atob(data.content);
+    kod = kod.replace(/let USER = "[^"]*"/, `let USER = "${yeni}"`);
+    
+    await fetch("https://api.github.com/repos/yumuk0303/yumukonline/contents/index.html",{
+      method:"PUT",
+      headers:{"Authorization":"token "+TOKEN,"Accept":"application/vnd.github.v3+json"},
+      body:JSON.stringify({message:"Şifre güncellendi",content:btoa(kod),sha:data.sha,branch:"main"})
     });
-
-    KULLANICI_SIFRESI = yeni;
-    document.getElementById("aktif").textContent = yeni;
-    alert("Şifre GitHub’da güncellendi!\n10 saniye içinde herkes yeni şifreyle girer.");
-    document.getElementById("yenisifre").value = "";
-  } catch (err) {
-    alert("Hata: Token yanlış veya repo adı farklı olabilir.");
-  }
+    
+    USER=yeni;
+    document.getElementById("aktif").textContent=yeni;
+    alert("Şifre değişti: "+yeni+"\n10 saniye içinde aktif olur.");
+    document.getElementById("yenisifre").value="";
+  }catch{alert("Bir hata oldu. Token doğru mu?");}
 }
 
-function acSite() {
-  window.open("https://cheapiptv.co/billing/index.php?rp=/store/trial-trial/24-hours", "_blank", "noopener,noreferrer");
+function ac(){
+  window.open("https://cheapiptv.co/billing/index.php?rp=/store/trial-trial/24-hours","_blank","noopener,noreferrer");
 }
 </script>
-
 </body>
 </html>
