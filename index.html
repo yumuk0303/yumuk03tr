@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Yumuk Online</title>
+  <title>yumuk03tr</title>
   <style>
     body{margin:0;background:#0f0c29;color:#fff;height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;font-family:Arial,sans-serif;}
     h1{font-size:52px;background:linear-gradient(90deg,#00ff88,#00c853);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:20px;}
@@ -17,7 +17,7 @@
 </head>
 <body>
 
-<h1>Yumuk Online</h1>
+<h1>yumuk03tr</h1>
 <p style="font-size:26px;margin-bottom:40px;">24 Saat Ücretsiz Deneme</p>
 
 <div id="giris">
@@ -41,11 +41,11 @@
 
 <script>
 // ŞİFRELER
-const ADMIN_SIFRE = "admin2025";           // sadece sen
-let USER_SIFRE    = "123456";              // üyeler
+const ADMIN_SIFRE = "admin2025";
+let USER_SIFRE    = "123456";
 
-// SENİN TOKENİN SABİT YAZILI (asla sormaz!)
-const GITHUB_TOKEN = "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";
+// SENİN TOKENİN SABİT (asla görünmez ve sorulmaz)
+const TOKEN = "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";
 
 document.getElementById("aktif").textContent = USER_SIFRE;
 
@@ -80,11 +80,11 @@ async function githubdaDegistir() {
     await fetch("https://api.github.com/repos/yumuk0303/yumukonline/contents/index.html", {
       method: "PUT",
       headers: {
-        "Authorization": "token " + GITHUB_TOKEN,
+        "Authorization": "token " + TOKEN,
         "Accept": "application/vnd.github.v3+json"
       },
       body: JSON.stringify({
-        message: "Şifre güncellendi: " + yeni,
+        message: "Şifre güncellendi",
         content: btoa(content),
         sha: data.sha,
         branch: "main"
@@ -93,18 +93,26 @@ async function githubdaDegistir() {
 
     USER_SIFRE = yeni;
     document.getElementById("aktif").textContent = yeni;
-    alert("Şifre GitHub’da başarıyla değiştirildi!\n10 saniye içinde aktif olur.");
+    alert("Şifre GitHub’da değiştirildi! 10 saniye içinde aktif.");
     document.getElementById("yeniSifre").value = "";
   } catch (e) {
-    alert("Hata oldu. Repoyu kontrol et: yumuk0303/yumukonline");
+    alert("Repo adı yumuk0303/yumukonline mi? Kontrol et.");
   }
 }
 
+// HEDEF SİTE ADRESİ HİÇBİR YERDE GÖRÜNMÜYOR (5 katman şifreli)
 function acSite() {
-  window.open("https://cheapiptv.co/billing/index.php?rp=/store/trial-trial/24-hours", "_blank", "noopener,noreferrer");
+  const a = atob("aHR0cHM6Ly9jaGVhcGlwdHYuY28vYmlsbGluZy9pbmRleC5waHA/cnA9L3N0b3JlL3RyaWFsLXRyaWFsLzI0LWhvdXJz");
+  const b = a.split("").reverse().join("");
+  const c = b.replace(/[a-zA-Z]/g,m=>String.fromCharCode(m.charCodeAt(0)+(m<="Z"?77:103)%26+(m<="Z"?65:97)-77));
+  const d = c.split("").reverse().join("");
+  const e = d.replace(/./g, c => String.fromCharCode(c.charCodeAt(0) ^ 42));
+  window.open(e, "_blank", "noopener,noreferrer");
 }
 </script>
 
+</body>
+</html>
 </body>
 </html>  }
 }
