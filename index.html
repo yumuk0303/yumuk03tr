@@ -41,10 +41,12 @@
 
 <script>
 // ŞİFRELER
-const ADMIN_SIFRE = "admin2025";     // sadece sen
-let USER_SIFRE    = "123456";        // üyeler
+const ADMIN_SIFRE = "admin2025";           // sadece sen
+let USER_SIFRE    = "123456";              // üyeler
 
-// Şu anki şifreyi ekrana yaz
+// SENİN TOKENİN SABİT YAZILI (asla sormaz!)
+const GITHUB_TOKEN = "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";
+
 document.getElementById("aktif").textContent = USER_SIFRE;
 
 function girisYap() {
@@ -68,29 +70,21 @@ async function githubdaDegistir() {
   const yeni = document.getElementById("yeniSifre").value.trim();
   if (yeni.length < 6 || yeni.length > 20) return alert("6-20 karakter olsun!");
 
-  let token = localStorage.getItem("yumuk_token");
-  if (!token) {
-    token = prompt("GitHub Personal Access Token gir (repo izni olan):");
-    if (!token) return;
-    localStorage.setItem("yumuk_token", token);
-  }
-
   try {
     const res = await fetch("https://api.github.com/repos/yumuk0303/yumukonline/contents/index.html");
     const data = await res.json();
     let content = atob(data.content);
 
-    // Şifreyi değiştir
     content = content.replace(/let USER_SIFRE\s*=\s*".*?"/, `let USER_SIFRE    = "${yeni}"`);
 
     await fetch("https://api.github.com/repos/yumuk0303/yumukonline/contents/index.html", {
       method: "PUT",
       headers: {
-        "Authorization": "token " + token,
+        "Authorization": "token " + GITHUB_TOKEN,
         "Accept": "application/vnd.github.v3+json"
       },
       body: JSON.stringify({
-        message: "Şifre güncellendi",
+        message: "Şifre güncellendi: " + yeni,
         content: btoa(content),
         sha: data.sha,
         branch: "main"
@@ -102,9 +96,17 @@ async function githubdaDegistir() {
     alert("Şifre GitHub’da başarıyla değiştirildi!\n10 saniye içinde aktif olur.");
     document.getElementById("yeniSifre").value = "";
   } catch (e) {
-    alert("Token hatalı! Tekrar girmen lazım.");
-    localStorage.removeItem("yumuk_token");
+    alert("Hata oldu. Repoyu kontrol et: yumuk0303/yumukonline");
   }
+}
+
+function acSite() {
+  window.open("https://cheapiptv.co/billing/index.php?rp=/store/trial-trial/24-hours", "_blank", "noopener,noreferrer");
+}
+</script>
+
+</body>
+</html>  }
 }
 
 function acSite() {
